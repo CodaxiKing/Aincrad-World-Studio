@@ -1,0 +1,26 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {World,generate,house,transformPoint,transformState,previewPlacement,applyDelta,isAir} from '../dist/world.js';
+import {encodeSchematic,readNBT,decodeSchematic,importSchematic,gzip} from '../dist/nbt.js';
+import {mesh} from '../dist/renderer.js';
+const params={x:5,y:10,z:5,rotation:0,mirrorX:false,mirrorZ:false,terrain:'none',air:'ignore'};
+const states=w=>Array.from(w.cells,id=>w.palette[id]);
+test('same seed produces identical volume and other seeds differ',()=>{const a=generate({size:48,seed:'a'}),b=generate({size:48,seed:'a'}),c=generate({size:48,seed:'b'});assert.deepEqual(a.cells,b.cells);assert.notDeepEqual(a.cells,c.cells);assert.ok(a.top(24,24)>20);assert.ok(a.get(24,1,24)===0);});
+test('all environment presets generate bounded renderable geometry',()=>{for(const type of ['island','city','mixed','exploration','maze','dungeon','boss']){const a=generate({type,size:48});assert.ok(mesh(a).length>0);assert.equal(a.cells.length,48*80*48);}});
+test('Sponge v3 NBT gzip round trip preserves canonical voxel states',async()=>{const w=house(),parsed=await importSchematic(await gzip(encodeSchematic(w)));assert.deepEqual([parsed.w,parsed.h,parsed.d],[11,13,11]);assert.deepEqual(states(w),states(parsed));assert.equal(parsed.dataVersion,4671);});
+test('v2 adapter handles air at nonzero palette ID and preserves offset',()=>{const parsed=decodeSchematic({Version:2,DataVersion:4671,Width:2,Height:1,Length:1,Offset:[-2,3,4],Palette:{'minecraft:stone':0,'minecraft:air':1},BlockData:Uint8Array.of(0,1)});assert.equal(parsed.palette[0],'minecraft:air');assert.deepEqual(states(parsed),['minecraft:stone','minecraft:air']);assert.deepEqual(parsed.offset,[-2,3,4]);});
+test('reject malformed NBT, invalid dimensions, bad varints, executable blocks and entities',()=>{
+ assert.throws(()=>readNBT(Uint8Array.of(10,0,0,3,0)),/truncado/);
+ const valid={Version:2,DataVersion:4671,Width:1,Height:1,Length:1,Palette:{'minecraft:stone':0},BlockData:Uint8Array.of(0)};
+ for(const mutation of [{Width:513},{Version:1},{DataVersion:99999},{BlockData:Uint8Array.of(128)},{Palette:{'minecraft:command_block':0}},{Entities:[{}]},{BlockData:Uint8Array.of(0,0)}])assert.throws(()=>decodeSchematic({...valid,...mutation}));
+});
+test('transforms on rectangular asset remain in swapped bounds and are bijective',()=>{const a=new World(3,2,5);for(const rotation of [0,90,180,270])for(const mirrorX of [false,true])for(const mirrorZ of [false,true]){const set=new Set();for(let x=0;x<3;x++)for(let y=0;y<2;y++)for(let z=0;z<5;z++){const p=transformPoint(x,y,z,a,{rotation,mirrorX,mirrorZ});assert.ok(p[0]>=0&&p[0]<(rotation%180?5:3));assert.ok(p[2]>=0&&p[2]<(rotation%180?3:5));set.add(p.join());}assert.equal(set.size,30);}});
+test('directional states rotate and mirror rails, stairs, signs and axes',()=>{
+ const t={rotation:90,mirrorX:false,mirrorZ:false};assert.equal(transformState('minecraft:oak_stairs[facing=north,half=bottom,shape=straight]',t),'minecraft:oak_stairs[facing=east,half=bottom,shape=straight]');assert.equal(transformState('minecraft:oak_log[axis=x]',t),'minecraft:oak_log[axis=z]');assert.equal(transformState('minecraft:rail[shape=north_south]',t),'minecraft:rail[shape=east_west]');assert.equal(transformState('minecraft:oak_sign[rotation=0]',t),'minecraft:oak_sign[rotation=4]');assert.equal(transformState('minecraft:oak_stairs[shape=inner_left]',{...t,mirrorX:true}),'minecraft:oak_stairs[shape=inner_right]');
+});
+test('with air clears interior while ignore-air retains it',()=>{const a=new World(2,1,1);a.set(0,0,0,'minecraft:oak_planks');for(const air of ['ignore','include']){const w=new World(20,20,20);w.set(6,10,5,'minecraft:dirt');const p=previewPlacement(w,a,{...params,air});applyDelta(w,p);assert.equal(w.palette[w.get(6,10,5)],air==='ignore'?'minecraft:dirt':'minecraft:air');}});
+test('compound adaptation delta supports exact semantic undo and redo',()=>{const w=generate({size:48}),a=house(),before=states(w),p=previewPlacement(w,a,{...params,x:18,y:40,z:18,terrain:'adapt'});applyDelta(w,p);const after=states(w);assert.notDeepEqual(before,after);applyDelta(w,p,'before');assert.deepEqual(states(w),before);p.baseRevision=w.revision;applyDelta(w,p);assert.deepEqual(states(w),after);});
+test('out-of-bounds, stale previews and unsupported foundation fail',()=>{const w=new World(24,40,24),a=house();assert.throws(()=>previewPlacement(w,a,{...params,x:20}));assert.throws(()=>previewPlacement(w,a,{...params,terrain:'foundation'}),/apoio/);const p=previewPlacement(w,a,params);w.revision++;assert.throws(()=>applyDelta(w,p),/obsoleta/);});
+test('terrain excavation detects destructive collision before clearing an existing structure',()=>{const w=new World(30,40,30),a=house();w.set(6,12,6,'minecraft:diamond_block');const p=previewPlacement(w,a,{...params,terrain:'excavate'});assert.ok(p.collisions>0);assert.equal(w.palette[w.get(6,12,6)],'minecraft:diamond_block');});
+test('solid cube mesh omits internal faces and exposes world edges',()=>{const w=new World(2,2,2);w.cells.fill(w.id('minecraft:stone'));assert.equal(mesh(w).length/36,24);assert.equal(mesh(w,null,1).length/36,16);});
+test('invalid gzip fails without producing an imported asset',async()=>{await assert.rejects(importSchematic(Uint8Array.of(31,139,0,0)));});

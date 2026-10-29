@@ -1,0 +1,11 @@
+{
+  "minecraft": "1.21.11",
+  "renderer": "deepslate 0.27.2",
+  "sha256": {
+    "atlas.json": "bd1d6b2de673fe9d2fd0c4d88cff0657551613874e8acc45426f12036c921fda",
+    "atlas.png": "acdfa1fe9892c78ad67e1850adbbd885fd19b749b8b378b0dcea4fbc6147b203",
+    "blockstates.json": "f0072b0aacc3b449ee1f277c4796beb4efeb6fd47e061d13974a85efc5047298",
+    "models.json": "4f699377c113e9063875d4463053188ec24bbb7429c60ce59db12526a8b86696",
+    "registry.json": "178a12096f59f863758a6c685e5eb6de38721b376a30a30383e171d0799f3ee7"
+  }
+}
