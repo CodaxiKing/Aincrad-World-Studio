@@ -1,0 +1,2 @@
+import {buildPlanSchematic,buildFacadeSchematic} from './image-blueprint.js';
+self.onmessage=e=>{try{const p=e.data,w=p.kind==='facade'?buildFacadeSchematic(new Uint8ClampedArray(p.rgba),p.imageWidth,p.imageHeight,p.options):buildPlanSchematic(p.reference,p.options),snapshot=w.snapshot();self.postMessage({ok:true,snapshot},[snapshot.cells.buffer]);}catch(e){self.postMessage({ok:false,error:e.message});}};

@@ -84,3 +84,18 @@ Execute `npm test`. Há 70 testes automatizados de núcleo, mapas, pincéis, mod
 - `docs/MUNDOS_GRANDES_E_EXPORTACAO.md`: estado atual, uso, arquitetura, API, limitações e validação.
 - `docs/ATUALIZACAO_MODELOS_E_MUNDOS.md`: histórico da etapa anterior.
 - Demais documentos em docs registram as etapas anteriores e podem conter limites antigos, substituídos pelo README e pela atualização atual.
+
+
+## Mapas e construções por imagem
+
+O botão **Criar mapa / construção por imagem**, nas abas Andar e Construções, aceita PNG, JPEG e WebP locais (10 MB, 20 milhões de pixels). A classificação é reduzida para até 1024 pixels por eixo e pode ser corrigida com pincel, seleção de cor semelhante e desfazer.
+
+- **Planta / mapa superior:** contorno, ruas, água, floresta e plantas de prédios classificados. A geração produz volumes com paredes, janelas, portas e cobertura por regras; não interpreta automaticamente todos os detalhes arquitetônicos. Remova textos, legendas e molduras pintando como vazio.
+- **Perspectiva:** fachada 2,5D em blocos coloridos, com profundidade configurável e fundo removível pela máscara. Não reconstrói cidade tridimensional, lados ocultos ou interiores a partir de uma única imagem.
+- Prévia 3D, download Sponge v3 e inclusão na biblioteca para posicionar com as ferramentas existentes. Limite de cada peça: 2.097.152 posições; a prévia também obedece ao limite de faces do renderizador.
+- **Usar traçado no mapa central:** aplica a planta à geração por chunks, com dimensões X/Z independentes de 64 a 8192, em múltiplos de 16, incluindo 4048. A opção de proporção mantém o aspecto da imagem com arredondamento para chunks. A muralha cresce com o terreno e mantém a margem mínima de 1000 blocos. O oceano e seu fundo terminam no interior da muralha; fora dela há void, atravessado somente pelos suportes estruturais.
+- **Cidade em peças .schem**, dentro de Mundos grandes: ZIP com peças de até 128 × 128, deslocamentos em manifest.json e Offset Sponge relativo à mesma origem. Não inclui relevo, muralha ou oceano. A exportação de mundo continua disponível para o andar completo.
+
+O campo Offset segue a [especificação Sponge v3](https://github.com/SpongePowered/Schematic-Specification/blob/master/versions/schematic-3.md). Homologação prática no WorldEdit e Minecraft 1.21.11 permanece pendente. O limite 8192 é de configuração e geração por chunks, não uma garantia de desempenho de exportação integral; exportações extensas consomem tempo e disco e o ZIP atual tem limite de 4 GiB. Não há IA de reconstrução fotogramétrica implementada. Os sistemas MMORPG continuam planejados.
+
+Validação desta entrega: 75 testes automatizados, incluindo continuidade das peças, escala 4048/8192, classificação, orientação da fachada e leitura das peças Sponge exportadas. Teste de interface local com planta sintética, prévia 3D e troca para perspectiva.

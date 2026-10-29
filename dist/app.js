@@ -1,3 +1,4 @@
+import {createImageBlueprintUI} from './image-blueprint-ui.js';
 import {createLargeWorldUI} from './large-world-ui.js';
 import {createRegionUI} from './regions.js';
 import {World,generate,house,tower,previewPlacement,applyDelta,isAir} from './world.js';
@@ -173,4 +174,5 @@ $('#type').onchange=()=>{const type=$('#type').value;for(const [key,enabled]of O
 $('#references').nextElementSibling.id='reference-note';const placedSection=document.createElement('section');placedSection.className='property-section';placedSection.innerHTML='<h3>◈ Construções no mapa</h3><p class="field-help">Clique em uma construção no 3D ou na lista para mover o objeto existente. Soltar confirma; Esc cancela. A detecção de grupos antigos é aproximada.</p><div id="placed-objects"></div>';$('#placement-properties').prepend(placedSection);
 const largeWorldUI=createLargeWorldUI({modal,toast,log,getContext:()=>({world,floor:current+1,sceneName:types[project?.floors[current]?.type]||'Andar atual',biome:project?.floors[current]?.biome||'beginning'}),loadWorld:async snapshot=>{selection=null;orbitMode();const next=World.from(snapshot);mesh(next);world=next;history=[];future=[];project.floors[current].configured=true;await saveMeta();renderFloors();$('#cut').max=next.h;$('#cut').value=next.h;await saveFloor();drawWorld();renderer.reset();}});
 createRegionUI({modal,toast,getWorld:()=>world,commit:commitOperation,onAsset:async (asset,name)=>{const a={...asset.snapshot(),id:uid(),name,builtin:false,solid:asset.cells.reduce((n,id)=>n+(id!==0),0)};await db.put('assets',a.id,a);assets.push(a);renderAssets();}});
+createImageBlueprintUI({modal,toast,onReference:r=>largeWorldUI.setReference(r),onAsset:async(asset,name)=>{const a={...asset.snapshot(),id:uid(),name,builtin:false,solid:asset.cells.reduce((n,id)=>n+(id!==0),0)};await db.put('assets',a.id,a);assets.push(a);renderAssets();}});
 run(init);
