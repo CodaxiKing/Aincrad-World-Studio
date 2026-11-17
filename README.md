@@ -8,6 +8,10 @@ Execute `Iniciar_Aincrad.cmd` ou `npm start` na pasta do projeto, com Node.js 22
 
 O servidor aceita somente conexões locais. `PORT` permite outra porta; cada origem/porta possui um projeto de navegador separado. Os andares/janelas, histórico, assets e referências são salvos em IndexedDB. Mundos grandes têm configuração e edições em disco em `.runtime/worlds`. Para guardar ou transferir o projeto, use o botão Projeto e baixe o backup `.aincrad`. O backup não contém o histórico geral de desfazer nem a extensão completa dos mundos grandes; copie a pasta correspondente em `.runtime/worlds` para transferir esses projetos editáveis. Use uma aba por origem, pois ainda não há colaboração multiusuário ou trava entre abas.
 
+## Andar de Aincrad em disco e miniatura 3D
+
+Em **Mundos grandes e geração avançada**, o terreno padrão agora é **Andar de Aincrad · disco completo**: cidade inicial murada ao sul, torre-labirinto ao norte até o teto do andar, cordilheira, lago, rio, florestas, estradas e vilas. Ao criar o mundo, o diálogo mostra uma **miniatura 3D do andar inteiro**; a janela 3D do editor continua mostrando só um recorte de até 96 blocos, e o mundo completo é gravado em **Exportar mundo .zip**. Detalhes e limitações em [docs/ANDAR_AINCRAD_DISCO.md](docs/ANDAR_AINCRAD_DISCO.md).
+
 ## Fundo oceânico e pilares proporcionais
 
 A atualização mais recente está em [docs/OCEANO_E_PILARES.md](docs/OCEANO_E_PILARES.md). Ela inclui nível de água automático ou manual, fundo de bedrock/pedra/areia e colunas nas pontas com metade da altura dos pilares da borda.
@@ -74,7 +78,7 @@ Velocity/Paper, PostgreSQL/Redis, contas, personagens, chefes, primeiro grupo ve
 
 ## Testes e arquivos
 
-Execute `npm test`. Há 70 testes automatizados de núcleo, mapas, pincéis, modelos, objetos, geração e exportação, além de um teste de integração HTTP executado separadamente. A validação de navegador incluiu renderização local dos assets, colagem e histórico, movimento sem duplicação, projeto persistido e geração retangular com múltiplos conteúdos. Ainda é necessária homologação de mapas reais e execução no Minecraft.
+Execute `npm test`. Há 79 testes automatizados de núcleo, mapas, pincéis, modelos, objetos, geração e exportação, além de um teste de integração HTTP executado separadamente. A validação de navegador incluiu renderização local dos assets, colagem e histórico, movimento sem duplicação, projeto persistido e geração retangular com múltiplos conteúdos. Ainda é necessária homologação de mapas reais e execução no Minecraft.
 
 - `dist`: app estático e recursos incluídos.
 - `server.mjs` e `lib`: servidor/API local, worker de exportação, NBT, Anvil e ZIP, sem instalação de dependências.
